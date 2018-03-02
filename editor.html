@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+    <title>Brython interactive mode</title>
+    <meta charset="UTF-8">
+    <meta name=robots content="index, follow">
+    <meta name=description content=CodeEditor >
+    <meta name=author content="Ryoz">
+    <meta name=keywords content="Python, Brython, Code Editor, Compiler">
+    <meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="/styles/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles/navbar.css">
+    <noscript>Please enable Javascript to view this page correctly.</noscript>
+    <script src="scripts/jquery.min.js"></script>
+    <script src="scripts/bootstrap.min.js"></script>
+    <script src="scripts/brython.js"></script>
+    <script src="scripts/ace.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+    .codearea {
+        background-color:#000;
+        color:#fff;
+        font-family:'Oxygen Mono', Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+        font-size:14px;
+        overflow:auto
+    }
+    </style>
+</head>
+
+<body onload="brython(1)" class="container-fluid">
+    <h3>Code Editor for Python</h3>
+    <hr>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="submit" id="testrun" name ="action" value="Test Run" class="btn btn-primary float-left">Run</button>
+                </div>
+            </div>
+            <div class="codeeditor">
+                <form id="form_code">
+                    <div id="status"></div>
+                    <div id="codes" style="height: 450px; border: 1px solid grey;"></div>
+                    <textarea id="code_editor" name="codes" style="display: none;"></textarea><br> 
+                </form> 
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6"></div>
+                <div class="col-md-6 text-right">
+                    <button id="clear" type="submit" name="action" class="btn btn-default float-right">Clear</button>
+                </div>
+            </div>
+            <div class="console">
+                <textarea id=code class=codearea style="width: 100%; height: 450px;"></textarea>
+                <div id=content></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/python3" src="console.py"></script>
+    <script type="text/javascript">
+        var editor = ace.edit("codes");
+        editor.setTheme("ace/theme/textmate");
+        editor.getSession().setMode("ace/mode/python");
+        editor.setOptions({
+            fontSize: "14pt"
+        })
+        var textarea = $('textarea[name="codes"]');
+        textarea.val(editor.getSession().getValue());
+        editor.getSession().on("change", function () {
+            textarea.val(editor.getSession().getValue());
+            console.log(textarea.val())
+        });
+
+        // document.getElementById('testrun').onclick = function() {
+        //     document.getElementById("code").value += "\n>>> "
+        //     document.getElementById("code").value += document.getElementById("code_editor").value
+        //     console.log(document.getElementById("code").value);
+        //     // var form = document.getElementById('form_code');
+        //     // form.submit();
+        // }
+    </script>
+</body>
+
+</html>
