@@ -201,9 +201,16 @@ def myKeyDown(event):
             event.preventDefault()
             event.stopPropagation()
 
+def clearConsole(event):
+    doc['code'].value = ">>> "
+
 def execCode(event):
+    clearConsole(event)
+    result = {}
     doc['code'].value += "\n>>> "
     doc['code'].value += doc['code_editor'].value
+    result['code'] = doc['code_editor'].value
+
     global _status, current
     src = doc['code'].value
     if _status == "main":
@@ -225,12 +232,15 @@ def execCode(event):
             _ = editor_ns['_'] = eval(currentLine, editor_ns)
             if _ is not None:
                 write(repr(_)+'\n')
+                #result['output'] = repr(_)
             doc['code'].value += '>>> '
             _status = "main"
         except IndentationError:
             doc['code'].value += '... '
             _status = "block"
+            #result['output'] = "Indentation Error"
         except SyntaxError as msg:
+            #result['output'] = str(msg)
             if str(msg) == 'invalid syntax : triple string end not found' or \
                 str(msg).startswith('Unbalanced bracket'):
                 doc['code'].value += '... '
@@ -240,6 +250,7 @@ def execCode(event):
                     exec(currentLine, editor_ns)
                 except:
                     traceback.print_exc()
+                    #result['output'] = str(traceback.print_exc())
                 doc['code'].value += '>>> '
                 _status = "main"
             elif str(msg) == 'decorator expects function':
@@ -247,12 +258,15 @@ def execCode(event):
                 _status = "block"
             else:
                 traceback.print_exc()
+                #result['output'] = str(traceback.print_exc())
                 doc['code'].value += '>>> '
                 _status = "main"
         except:
             traceback.print_exc()
+            #result['output'] = str(traceback.print_exc())
             doc['code'].value += '>>> '
             _status = "main"
+
     elif currentLine == "":  # end of block
         block = src[src.rfind('>>>') + 4:].splitlines()
         block = [block[0]] + [b[4:] for b in block[1:]]
@@ -263,17 +277,22 @@ def execCode(event):
             _ = exec(block_src, editor_ns)
             if _ is not None:
                 print(repr(_))
+                #result['output'] = str(repr(_))
         except:
             traceback.print_exc()
+            #result['output'] = str(traceback.print_exc())
+
         doc['code'].value += '>>> '
     else:
         doc['code'].value += '... '
 
+    result['output'] = str(repr(doc['code'].value))
+    print(repr(result))
+    
+    doc['code'].value += '\n>>> '
     cursorToEnd()
     event.preventDefault()
 
-def clearConsole(event):
-    doc['code'].value = ">>> "
 
 doc['code'].bind('keypress', myKeyPress)
 doc['code'].bind('keydown', myKeyDown)
