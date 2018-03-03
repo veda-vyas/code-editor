@@ -6,6 +6,9 @@
 * Code Editor built using [Ace](https://github.com/ajaxorg/ace)
 * Interactive Console built using [Brython](https://github.com/brython-dev/brython)
 
+## TuDu:
+* Code Evaluator ([help](https://github.com/veda-vyas/testcase-evaluator))
+
 ## Installation:
 * Clone the Repository
 ``` git clone https://github.com/veda-vyas/code-editor.git ```
