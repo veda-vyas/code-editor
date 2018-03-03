@@ -1,6 +1,6 @@
 import sys
 import traceback
-from io import StringIO
+
 from browser import document as doc
 from browser import window, alert, console
 
@@ -9,25 +9,19 @@ _credits = """    Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast o
 
 _copyright = """Copyright (c) 2012, Pierre Quentel pierre.quentel@gmail.com
 All Rights Reserved.
-
 Copyright (c) 2001-2013 Python Software Foundation.
 All Rights Reserved.
-
 Copyright (c) 2000 BeOpen.com.
 All Rights Reserved.
-
 Copyright (c) 1995-2001 Corporation for National Research Initiatives.
 All Rights Reserved.
-
 Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.
 All Rights Reserved."""
 
 _license = """Copyright (c) 2012, Pierre Quentel pierre.quentel@gmail.com
 All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-
 Redistributions of source code must retain the above copyright notice, this
 list of conditions and the following disclaimer. Redistributions in binary
 form must reproduce the above copyright notice, this list of conditions and
@@ -36,7 +30,6 @@ with the distribution.
 Neither the name of the <ORGANIZATION> nor the names of its contributors may
 be used to endorse or promote products derived from this software without
 specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -63,7 +56,7 @@ def license():
 license.__repr__ = lambda:_license
 
 def write(data):
-    result['output'] = str(data).strip()
+    result['output'].append(str(data).strip())
     doc['code'].value += str(data)
 
 
@@ -202,26 +195,21 @@ def myKeyDown(event):
             event.preventDefault()
             event.stopPropagation()
 
-def clearConsole(event):
-    doc['code'].value = ">>> "
-
 def execCode(event):
     clearConsole(event)
     input = open('testcases/input001.txt')
     output = open('testcases/output001.txt')
-    operr = StringIO()
-    sys.stderr = operr
 
     global result
-    result = {}
-    result['input'] = input.read()
-    result['expected'] = output.read()
+    result = {'output':[]}
+    result['input'] = input.read().splitlines()
+    result['expected'] = output.read().splitlines()
 
     sys.stdin = input
 
     doc['code'].value += doc['code_editor'].value
-    result['code'] = doc['code_editor'].value
-
+    result['code'] = doc['code_editor'].value.strip()
+    
     global _status, current
     src = doc['code'].value
     if _status == "main":
@@ -248,9 +236,7 @@ def execCode(event):
         except IndentationError:
             doc['code'].value += '... '
             _status = "block"
-            #result['output'] = "Indentation Error"
         except SyntaxError as msg:
-            #result['output'] = str(msg)
             if str(msg) == 'invalid syntax : triple string end not found' or \
                 str(msg).startswith('Unbalanced bracket'):
                 doc['code'].value += '... '
@@ -258,10 +244,8 @@ def execCode(event):
             elif str(msg) == 'eval() argument must be an expression':
                 try:
                     exec(currentLine, editor_ns)
-                    result['output'] = exec(currentLine, editor_ns)
                 except:
                     traceback.print_exc()
-                    result['output'] = operr.getvalue()
                 doc['code'].value += '>>> '
                 _status = "main"
             elif str(msg) == 'decorator expects function':
@@ -269,15 +253,12 @@ def execCode(event):
                 _status = "block"
             else:
                 traceback.print_exc()
-                result['output'] = operr.getvalue()
                 doc['code'].value += '>>> '
                 _status = "main"
         except:
             traceback.print_exc()
-            result['output'] = operr.getvalue()
             doc['code'].value += '>>> '
             _status = "main"
-
     elif currentLine == "":  # end of block
         block = src[src.rfind('>>>') + 4:].splitlines()
         block = [block[0]] + [b[4:] for b in block[1:]]
@@ -290,17 +271,19 @@ def execCode(event):
                 print(repr(_))
         except:
             traceback.print_exc()
-            result['output'] = operr.getvalue()
-
         doc['code'].value += '>>> '
     else:
         doc['code'].value += '... '
 
-    print(repr(result))
-    # doc['code'].value += '\n>>> '
+    doc['tcinp'].html = result['input']
+    doc['exop'].html = result['expected']
+    doc['op'].html = result['output']
+    doc['subcode'].html = result['code']
     cursorToEnd()
     event.preventDefault()
 
+def clearConsole(event):
+    doc['code'].value = ">>> "
 
 doc['code'].bind('keypress', myKeyPress)
 doc['code'].bind('keydown', myKeyDown)
@@ -312,4 +295,3 @@ doc['code'].value = ">>> "
 #doc['code'].value += 'Type "copyright", "credits" or "license" for more information.'
 doc['code'].focus()
 cursorToEnd()
-
