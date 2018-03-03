@@ -1,6 +1,6 @@
 import sys
 import traceback
-
+from io import StringIO
 from browser import document as doc
 from browser import window, alert, console
 
@@ -63,6 +63,7 @@ def license():
 license.__repr__ = lambda:_license
 
 def write(data):
+    result['output'] = str(data).strip()
     doc['code'].value += str(data)
 
 
@@ -206,8 +207,18 @@ def clearConsole(event):
 
 def execCode(event):
     clearConsole(event)
+    input = open('testcases/input001.txt')
+    output = open('testcases/output001.txt')
+    operr = StringIO()
+    sys.stderr = operr
+
+    global result
     result = {}
-    doc['code'].value += "\n>>> "
+    result['input'] = input.read()
+    result['expected'] = output.read()
+
+    sys.stdin = input
+
     doc['code'].value += doc['code_editor'].value
     result['code'] = doc['code_editor'].value
 
@@ -232,7 +243,6 @@ def execCode(event):
             _ = editor_ns['_'] = eval(currentLine, editor_ns)
             if _ is not None:
                 write(repr(_)+'\n')
-                #result['output'] = repr(_)
             doc['code'].value += '>>> '
             _status = "main"
         except IndentationError:
@@ -248,9 +258,10 @@ def execCode(event):
             elif str(msg) == 'eval() argument must be an expression':
                 try:
                     exec(currentLine, editor_ns)
+                    result['output'] = exec(currentLine, editor_ns)
                 except:
                     traceback.print_exc()
-                    #result['output'] = str(traceback.print_exc())
+                    result['output'] = operr.getvalue()
                 doc['code'].value += '>>> '
                 _status = "main"
             elif str(msg) == 'decorator expects function':
@@ -258,12 +269,12 @@ def execCode(event):
                 _status = "block"
             else:
                 traceback.print_exc()
-                #result['output'] = str(traceback.print_exc())
+                result['output'] = operr.getvalue()
                 doc['code'].value += '>>> '
                 _status = "main"
         except:
             traceback.print_exc()
-            #result['output'] = str(traceback.print_exc())
+            result['output'] = operr.getvalue()
             doc['code'].value += '>>> '
             _status = "main"
 
@@ -277,19 +288,16 @@ def execCode(event):
             _ = exec(block_src, editor_ns)
             if _ is not None:
                 print(repr(_))
-                #result['output'] = str(repr(_))
         except:
             traceback.print_exc()
-            #result['output'] = str(traceback.print_exc())
+            result['output'] = operr.getvalue()
 
         doc['code'].value += '>>> '
     else:
         doc['code'].value += '... '
 
-    result['output'] = str(repr(doc['code'].value))
     print(repr(result))
-    
-    doc['code'].value += '\n>>> '
+    # doc['code'].value += '\n>>> '
     cursorToEnd()
     event.preventDefault()
 
