@@ -5,9 +5,19 @@
 * Supports executing Python3 code
 * Code Editor built using [Ace](https://github.com/ajaxorg/ace)
 * Interactive Console built using [Brython](https://github.com/brython-dev/brython)
+* Supporting stdin and stdout streams for testcases
+* Returns a result object after every execution
+    ```
+    {
+        "input": [<line>,<line>,...],
+        "output": [<line>,<line>,...],
+        "expected": [<line>,<line>,...],
+        "code": <string>
+    }
+    ```
 
 ## TuDu:
-* Code Evaluator ([help](https://github.com/veda-vyas/testcase-evaluator))
+* Testcase Evaluator ([help](https://github.com/veda-vyas/testcase-evaluator))
 
 ## Installation:
 * Clone the Repository
